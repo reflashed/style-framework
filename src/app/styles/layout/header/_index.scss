@@ -1,0 +1,5 @@
+.header {
+  @include sheet-stackable(header);
+
+  height: 100px;
+} 
