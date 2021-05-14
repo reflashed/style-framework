@@ -1,7 +1,10 @@
 @use 'style-framework/type';
 
 .hero {
-  //@include column-stackable(section);
+  @include column-stackable(section);
+  @include heading-1;
+
+
 
   color: red;
   font-size: type.$type-xs;
