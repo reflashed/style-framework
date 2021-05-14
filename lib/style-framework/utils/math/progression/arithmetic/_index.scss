@@ -1,0 +1,13 @@
+@use 'sass:map';
+@use 'sass:math';
+
+@function arithmetic($initial-value, $common-difference, $min-index: -3, $max-index: 6) {
+  $progression: ();
+
+  @for $index from $min-index through $max-index {
+    $element: $initial-value + ($common-difference * $index);
+    $progression: map.set($progression, $index, $element);
+  }
+
+  @return $progression;
+}

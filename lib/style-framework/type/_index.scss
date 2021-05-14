@@ -1,0 +1,12 @@
+@use 'style-framework/utils/math/progression';
+
+$type-scale: progression.geometric(
+  $initial-value: 16px,
+  $common-ratio: 2,
+);
+
+$type-xs: map-get($type-scale, 2);
+$type-sm: map-get($type-scale, 1);
+$type-md: map-get($type-scale, 2);
+$type-lg: map-get($type-scale, 3);
+$type-xl: map-get($type-scale, 4);
