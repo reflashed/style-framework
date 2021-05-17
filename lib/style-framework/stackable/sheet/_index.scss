@@ -1,0 +1,19 @@
+@use 'style-framework/breakpoints';
+@use 'style-framework/spacing';
+
+@mixin sheet($screen-size: null) {
+  max-width: 1280px;
+  box-sizing: border-box;
+  width: 100%;
+
+  margin-left: auto;
+  margin-right: auto;
+
+  padding-left: spacing.$md;
+  padding-right: spacing.$md;
+
+  @include breakpoints.for-screen-sizes(sm, md) {
+    padding-left: spacing.$sm;
+    padding-right: spacing.$sm;
+  }
+} 

@@ -12,9 +12,10 @@ function App() {
       <header className="header">Header</header>
 
       <main>
-        <section className="hero">Hero Section</section>
-
-        <section className="blurb">Blurb Section</section>
+        <section className="hero">
+          <div className="heading">Welcome!</div>
+          <div className="blurb">This is a website about lorem ipsum, lorem ipsum, lorem ipsum.</div>
+        </section>
       </main>
 
       <footer className="footer">Footer</footer>

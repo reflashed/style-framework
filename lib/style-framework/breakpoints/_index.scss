@@ -1,0 +1,143 @@
+@use 'sass:math';
+
+// This doesn't make sense and should be renamed
+$grid-breakpoints: (
+  xs: 0,
+  sm: 600px,
+  md: 960px,
+  lg: 1280px,
+  xl: Infinity,
+);
+
+// Convenience function for media queries
+// E.g. @include for-screen-sizes(lg), for-screen-sizes(sm, md), etc
+@mixin for-screen-sizes($breakpoints...) {
+  $num-screen-sizes-passed: length($breakpoints);
+
+  $one-screen-size-passed: ($num-screen-sizes-passed == 1);
+  $multiple-screen-sizes-passed: ($num-screen-sizes-passed > 1);
+
+  @if $one-screen-size-passed {
+    $breakpoint-name: unquote(nth($breakpoints, 1));
+    $min-name: breakpoint-previous($breakpoint-name, $grid-breakpoints);
+
+    $min-width: breakpoint-min($min-name, $grid-breakpoints);
+    $max-width: breakpoint-max($breakpoint-name, $grid-breakpoints);
+    $next-width: breakpoint-next($breakpoint-name, $grid-breakpoints);
+
+    $max-width-exists: ($max-width != null);
+    $min-width-exists: ($min-width != null);
+
+    @if $max-width-exists and $min-width-exists {
+      $max-width-is-infinite: ($max-width == Infinity);
+
+      @if $max-width-is-infinite {
+        @media only screen and (min-width: $min-width) {
+          @content;
+        }
+      } @else {
+        @media only screen and (min-width: $min-width) and (max-width: $max-width) {
+          @content;
+        }
+      }
+    } @else if not $min-width-exists {
+      @media only screen and (max-width: $max-width) {
+        @content;
+      }
+    }
+  } @else if $multiple-screen-sizes-passed {
+    $min-name: unquote(nth($breakpoints, 1));
+    $max-name: unquote(nth($breakpoints, $num-screen-sizes-passed));
+    $previous-name: breakpoint-previous($min-name, $grid-breakpoints);
+
+    $previous-width: map-get($grid-breakpoints, $previous-name);
+    $max-width: breakpoint-max($max-name, $grid-breakpoints);
+
+    $previous-width-exists: ($previous-width != null);
+    $max-width-exists: ($max-width != null);
+
+    @if $previous-width-exists and $max-width-exists {
+      $max-width-is-infinite: ($max-width == Infinity);
+
+      @if $max-width-is-infinite {
+        @media only screen and (min-width: $previous-width) {
+          @content;
+        }
+      } @else {
+        @media only screen and (min-width: $previous-width) and (max-width: $max-width) {
+          @content;
+        }
+      }
+    } @else if not $previous-width-exists and $max-width-exists {
+      $max-width-is-infinite: ($max-width == Infinity);
+      $spans-all-widths: $max-width-is-infinite;
+
+      @if $spans-all-widths {
+        @content;
+      } @else {
+        @media only screen and (max-width: $max-width) {
+          @content;
+        }
+      }
+    }
+  } @else {
+    @error 'no breakpoint provided';
+  }
+}
+
+// Pixel based scale
+//
+// Get the pixel value based on a scale and a factor (base-size-px)
+// Inspired by https://type-scale.com/
+// Ex: get-px-size-by-scale-and-factor(sm, (xm: -1, sm: 0, md: 1, lg: 2, xl: 3, xxl: 4), 1.414, 18px)
+// Ex: get-px-size-by-scale-and-factor(sm, (sm: 1, md: 2, lg: 3), 2, 8px)
+@function get-px-size-by-scale-and-factor($size-name, $size-scales, $base-scale-px, $base-size-px) {
+  $size: map-get($size-scales, $size-name);
+  @return round(math.pow($base-scale-px, $size) * $base-size-px);
+}
+
+// Breakpoints utilities
+//
+// Name of the next breakpoint, or null for the last breakpoint.
+// Ex: breakpoint-next(small) => medium
+@function breakpoint-next($name, $breakpoints: $grid-breakpoints, $breakpoint-names: map-keys($breakpoints)) {
+  $n: index($breakpoint-names, $name);
+  @if not $n {
+    @error 'breakpoint `#{$name}` not found in `#{$breakpoints}`';
+  }
+  @return if($n < length($breakpoint-names), nth($breakpoint-names, $n + 1), null);
+}
+
+// Name of the previous breakpoint, or null for the first breakpoint.
+// Ex: breakpoint-prev(small) => extra-small
+@function breakpoint-previous($name, $breakpoints: $grid-breakpoints, $breakpoint-names: map-keys($breakpoints)) {
+  $n: index($breakpoint-names, $name);
+  @if not $n {
+    @error 'breakpoint `#{$name}` not found in `#{$breakpoints}`';
+  }
+  @return if($n > 2, nth($breakpoint-names, $n - 1), null);
+}
+
+// Minimum breakpoint width. Null for the smallest (first) breakpoint.
+// Ex: breakpoint-min(sm, (extra-small: 0, small: 600px, medium: 960px, large: 1280px)) => 600px
+@function breakpoint-min($name, $breakpoints: $grid-breakpoints) {
+  $min: map-get($breakpoints, $name);
+  @return if($min != 0, $min, null);
+}
+
+// Maximum breakpoint width.
+// The maximum value is reduced by 0.02px to work around the limitations of
+// `min-` and `max-` prefixes and viewports with fractional widths.
+// See https://www.w3.org/TR/mediaqueries-4/#mq-min-max
+// Uses 0.02px rather than 0.01px to work around a current rounding bug in Safari.
+// See https://bugs.webkit.org/show_bug.cgi?id=178261
+// Ex: breakpoint-max(medium, (extra-small: 0, small: 600px, medium: 960px, large: 1280px)) => 959.98px
+@function breakpoint-max($name, $breakpoints: $grid-breakpoints) {
+  $max: map-get($breakpoints, $name);
+
+  @if $max == Infinity {
+    @return $max;
+  }
+
+  @return if($max and $max > 0, $max - 0.02, null);
+}

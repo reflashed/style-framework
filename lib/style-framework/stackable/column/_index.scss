@@ -1,0 +1,61 @@
+@use 'style-framework/breakpoints';
+@use 'style-framework/spacing';
+
+@mixin column($screen-size: null) {
+  @include common-column-props();
+
+  @if $screen-size == null {
+    @include column-props-with-breakpoints();
+  } @else {
+    @include column-props-for-size($screen-size);
+  }
+} 
+
+@mixin common-column-props() {
+  display: grid;
+  width: 100%;
+  justify-content: center;
+}
+
+@mixin column-props-with-breakpoints() {
+  @include column-props-with-breakpoint(xl);
+  @include column-props-with-breakpoint(lg);
+  @include column-props-with-breakpoint(md);
+  @include column-props-with-breakpoint(sm);
+}
+
+@mixin column-props-with-breakpoint($screen-size) {
+  @include breakpoints.for-screen-sizes($screen-size) {
+    @include column-props-for-size($screen-size);
+  }
+}
+
+@mixin column-props-for-size($screen-size) {
+  $column-props: map-get($column-props-by-size, $screen-size);
+  grid-template: map-get($column-props, grid-template);
+  grid-column-gap: map-get($column-props, grid-column-gap);
+  padding: map-get($column-props, padding);
+}
+
+$column-props-by-size: (
+  xl: (
+    grid-template: 1fr / repeat(12, 72px),
+    grid-column-gap: spacing.$md,
+    padding: 0,
+  ),
+  lg: (
+    grid-template: 1fr / repeat(12, 1fr),
+    grid-column-gap: spacing.$md,
+    padding: 0 spacing.$md,
+  ),
+  md: (
+    grid-template: 1fr / repeat(6, 1fr),
+    grid-column-gap: spacing.$sm,
+    padding: 0 spacing.$sm,
+  ),
+  sm: (
+    grid-template: 1fr / repeat(2, 1fr),
+    grid-column-gap: spacing.$sm,
+    padding: 0 spacing.$sm,
+  ),
+);

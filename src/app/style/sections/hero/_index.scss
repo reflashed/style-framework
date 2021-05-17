@@ -1,12 +1,13 @@
-@use 'style-framework/type';
+@use 'style-framework/heading';
+@use 'style-framework/stackable';
 
 .hero {
-  @include column-stackable(section);
-  @include heading-1;
+  .heading {
+    @include stackable.sheet();
+    @include heading.heading-1();
+  }
 
-
-
-  color: red;
-  font-size: type.$type-xs;
-  height: 200px;
+  .blurb {
+    @include stackable.column();
+  }
 }
